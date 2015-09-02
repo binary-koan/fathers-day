@@ -40,21 +40,10 @@ class InitialState extends State
       waitTime: 2
     }
     {
-      setup: =>
-        @_path = new Path([
-          p(500, 300), p(700, 100), p(800, 200), p(750, 250)
-        ])
-        @_path.smooth()
-        @_offset = 0
-        @_step = @_path.length / 30
-      action: =>
-        @_offset += @_step
-        @dot.position = @_path.getLocationAt(@_offset).point
-        # console.log('step: ' + @_step + '; ' + @_path.length / 2)
-        if Math.abs(@_offset - (@_path.length / 2)) < @_step / 2
+      path: new Path([ p(500, 300), p(700, 100), p(800, 200), p(750, 250) ])
+      during: (path) =>
+        if Math.abs(@_offset - (path.length / 2)) < @_step / 2
           @foreground.bringToFront()
-      endCondition: =>
-        @_offset >= (@_path.length - @_step)
     }
   ]
 

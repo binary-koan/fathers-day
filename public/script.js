@@ -108,12 +108,25 @@ module.exports = State = (function() {
         this._sequenceWaitTime = null;
         return this._runNextInSequence(event);
       }
+    } else if (part.path) {
+      return this._continuePath(part, event);
     } else if (part.endCondition) {
       if (part.endCondition()) {
         return this._runNextInSequence(event);
       } else {
         return part.action(event);
       }
+    }
+  };
+
+  State.prototype._continuePath = function(part, event) {
+    this._offset += this._step;
+    if (this._offset >= (part.path.length - this._step)) {
+      this._runNextInSequence(event);
+    }
+    this.dot.position = part.path.getLocationAt(this._offset).point;
+    if (part.during) {
+      return part.during(part.path, event);
     }
   };
 
@@ -125,13 +138,25 @@ module.exports = State = (function() {
     } else {
       part = this._sequence[this._sequenceIndex];
       if (part.waitTime) {
-        this._sequenceWaitTime = 0;
+        if (part.waitTime) {
+          this._sequenceWaitTime = 0;
+        }
+      } else if (part.path) {
+        this._setupPath(part);
       }
       if (part.setup) {
         part.setup();
       }
-      return part.action(event);
+      if (part.action) {
+        return part.action(event);
+      }
     }
+  };
+
+  State.prototype._setupPath = function(part) {
+    part.path.smooth();
+    this._offset = 0;
+    return this._step = part.path.length / 30;
   };
 
   State.prototype.showText = function(text) {
@@ -296,26 +321,12 @@ module.exports = InitialState = (function(superClass) {
         })(this),
         waitTime: 2
       }, {
-        setup: (function(_this) {
-          return function() {
-            _this._path = new Path([p(500, 300), p(700, 100), p(800, 200), p(750, 250)]);
-            _this._path.smooth();
-            _this._offset = 0;
-            return _this._step = _this._path.length / 30;
-          };
-        })(this),
-        action: (function(_this) {
-          return function() {
-            _this._offset += _this._step;
-            _this.dot.position = _this._path.getLocationAt(_this._offset).point;
-            if (Math.abs(_this._offset - (_this._path.length / 2)) < _this._step / 2) {
+        path: new Path([p(500, 300), p(700, 100), p(800, 200), p(750, 250)]),
+        during: (function(_this) {
+          return function(path) {
+            if (Math.abs(_this._offset - (path.length / 2)) < _this._step / 2) {
               return _this.foreground.bringToFront();
             }
-          };
-        })(this),
-        endCondition: (function(_this) {
-          return function() {
-            return _this._offset >= (_this._path.length - _this._step);
           };
         })(this)
       }
@@ -378,25 +389,7 @@ module.exports = SecondState = (function(superClass) {
           };
         })(this)
       }, {
-        setup: (function(_this) {
-          return function() {
-            _this._path = new Path([p(230, 75), p(300, 25), p(400, 50), p(300, 300)]);
-            _this._path.smooth();
-            _this._offset = 0;
-            return _this._step = _this._path.length / 30;
-          };
-        })(this),
-        action: (function(_this) {
-          return function() {
-            _this._offset += _this._step;
-            return _this.dot.position = _this._path.getLocationAt(_this._offset).point;
-          };
-        })(this),
-        endCondition: (function(_this) {
-          return function() {
-            return _this._offset >= (_this._path.length - _this._step);
-          };
-        })(this)
+        path: new Path([p(230, 75), p(300, 25), p(400, 50), p(300, 300)])
       }
     ];
   };

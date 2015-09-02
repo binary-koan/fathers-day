@@ -19,18 +19,7 @@ class SecondState extends State
         @dot.position.x = 230 + Math.sin(event.time) * 10
     }
     {
-      setup: =>
-        @_path = new Path([
-          p(230, 75), p(300, 25), p(400, 50), p(300, 300)
-        ])
-        @_path.smooth()
-        @_offset = 0
-        @_step = @_path.length / 30
-      action: =>
-        @_offset += @_step
-        @dot.position = @_path.getLocationAt(@_offset).point
-      endCondition: =>
-        @_offset >= (@_path.length - @_step)
+      path: new Path([ p(230, 75), p(300, 25), p(400, 50), p(300, 300) ])
     }
   ]
 

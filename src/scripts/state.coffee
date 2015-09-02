@@ -34,11 +34,21 @@ class State
       else
         @_sequenceWaitTime = null
         @_runNextInSequence event
+    else if part.path
+      @_continuePath(part, event)
     else if part.endCondition
       if part.endCondition()
         @_runNextInSequence event
       else
         part.action(event)
+
+  _continuePath: (part, event) ->
+    @_offset += @_step
+    if @_offset >= (part.path.length - @_step)
+      @_runNextInSequence(event)
+
+    @dot.position = part.path.getLocationAt(@_offset).point
+    part.during(part.path, event) if part.during
 
   _runNextInSequence: (event) ->
     @_sequenceIndex++
@@ -46,9 +56,17 @@ class State
       @_sequenceFinished = true
     else
       part = @_sequence[@_sequenceIndex]
-      @_sequenceWaitTime = 0 if part.waitTime
+      if part.waitTime
+        @_sequenceWaitTime = 0 if part.waitTime
+      else if part.path
+        @_setupPath(part)
       part.setup() if part.setup
-      part.action(event)
+      part.action(event) if part.action
+
+  _setupPath: (part) ->
+    part.path.smooth()
+    @_offset = 0
+    @_step = part.path.length / 30
 
   showText: (text) ->
     @_textItem ?= @_setupText()
