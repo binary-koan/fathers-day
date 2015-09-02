@@ -1,0 +1,11 @@
+{
+  "name": "fathers-day",
+  "version": "0.0.1",
+  "dependencies": {
+    "gulp": "latest",
+    "gulp-coffee": "latest",
+    "gulp-sass": "^2.0.4",
+    "gulp-util": "latest",
+    "wiredep": "latest"
+  }
+}
