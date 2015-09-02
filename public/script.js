@@ -25,16 +25,21 @@ module.exports = Dot = (function(superClass) {
   function Dot(position) {
     this.circle = new Path.Circle({
       position: s(0, 0),
-      radius: 45,
+      radius: 30,
       fillColor: 'white'
     });
     this.face = new Raster({
-      source: 'images/faces-01.png',
-      size: s(50, 50)
+      source: 'images/faces-01.png'
     });
+    this.face.onLoad = (function(_this) {
+      return function() {
+        _this.face.scale(0.7);
+        return _this.face.onLoad = null;
+      };
+    })(this);
     Dot.__super__.constructor.call(this, {
       children: [this.circle, this.face],
-      position: view.center
+      position: position
     });
   }
 
@@ -57,12 +62,19 @@ module.exports = Dot = (function(superClass) {
 
 
 },{"./util":4}],3:[function(require,module,exports){
-var State, p;
+var Dot, State, loadBackground, p, ref;
 
-p = require('./util').p;
+ref = require('./util'), loadBackground = ref.loadBackground, p = ref.p;
+
+Dot = require('./dot');
 
 module.exports = State = (function() {
-  function State() {}
+  function State(imageID, dotPosition) {
+    this.background = loadBackground(imageID + '.jpg');
+    this.foreground = loadBackground(imageID + '-foreground.png');
+    this.dot = new Dot(dotPosition);
+    this.layer = new Layer([this.background, this.dot, this.foreground]);
+  }
 
   State.prototype.onMouseMove = function() {};
 
@@ -122,13 +134,13 @@ module.exports = State = (function() {
     }
   };
 
-  State.prototype.showText = function(dot, text) {
+  State.prototype.showText = function(text) {
     if (this._textItem == null) {
       this._textItem = this._setupText();
     }
     this._textItem.opacity = 1.75;
     this._textItem.content = text;
-    this._textItem.point = p(dot.bounds.center.x - (this._textItem.bounds.width / 2), dot.bounds.top - (this._textItem.bounds.height / 2));
+    this._textItem.point = p(this.dot.bounds.center.x - (this._textItem.bounds.width / 2), this.dot.bounds.top - (this._textItem.bounds.height / 2));
     return this._showingText = true;
   };
 
@@ -157,7 +169,7 @@ module.exports = State = (function() {
 })();
 
 
-},{"./util":4}],4:[function(require,module,exports){
+},{"./dot":2,"./util":4}],4:[function(require,module,exports){
 var loadBackground, p, r, s, setState;
 
 window.mouseTool = new Tool();
@@ -209,32 +221,32 @@ exports.s = s = function() {
 
 
 },{}],5:[function(require,module,exports){
-var Dot, InitialState, State, loadBackground, p, r, ref, s,
+var Dot, InitialState, SecondState, State, loadBackground, p, r, ref, s, setState,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-ref = require('../scripts/util'), loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+ref = require('../scripts/util'), setState = ref.setState, loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
 
 State = require('../scripts/state');
 
 Dot = require('../scripts/dot');
 
+SecondState = require('./2');
+
 module.exports = InitialState = (function(superClass) {
   extend(InitialState, superClass);
 
   function InitialState() {
-    InitialState.__super__.constructor.apply(this, arguments);
-    this.background = loadBackground('1.jpg');
-    this.foreground = loadBackground('1-foreground.png');
-    this.dot = new Dot(view.center);
+    InitialState.__super__.constructor.call(this, '1', view.center);
     this.dot.opacity = 0;
     this.dot.scale(0.2);
-    this.layer = new Layer([this.background, this.foreground, this.dot]);
+    this.dot.bringToFront();
   }
 
   InitialState.prototype.onMouseMove = function(event) {
     if (this._sequenceFinished && this.dot.contains(event.point)) {
-      return alert('done!');
+      this.showText('Wheeee!');
+      return this._stateChanging = true;
     }
   };
 
@@ -243,7 +255,7 @@ module.exports = InitialState = (function(superClass) {
       {
         action: (function(_this) {
           return function() {
-            _this.dot.scale(1.1);
+            _this.dot.scale(1.15);
             return _this.dot.opacity += 0.1;
           };
         })(this),
@@ -255,7 +267,7 @@ module.exports = InitialState = (function(superClass) {
       }, {
         action: (function(_this) {
           return function() {
-            return _this.showText(_this.dot, 'Hi!');
+            return _this.showText('Hi!');
           };
         })(this),
         waitTime: 2
@@ -267,7 +279,7 @@ module.exports = InitialState = (function(superClass) {
         })(this),
         action: (function(_this) {
           return function() {
-            return _this.showText(_this.dot, "I'm going on an adventure!");
+            return _this.showText("I'm going on an adventure!");
           };
         })(this),
         waitTime: 2
@@ -279,7 +291,7 @@ module.exports = InitialState = (function(superClass) {
         })(this),
         action: (function(_this) {
           return function() {
-            return _this.showText(_this.dot, 'See if you can catch me!');
+            return _this.showText('See if you can catch me!');
           };
         })(this),
         waitTime: 2
@@ -311,10 +323,85 @@ module.exports = InitialState = (function(superClass) {
   };
 
   InitialState.prototype.nextFrame = function(event) {
-    return this.dot.position.x = 750 + Math.sin(event.time) * 10;
+    if (this._stateChanging) {
+      if (this.dot.position.x > 900) {
+        return setState(new SecondState());
+      } else {
+        return this.dot.position.x += 10;
+      }
+    } else {
+      return this.dot.position.x = 750 + Math.sin(event.time) * 10;
+    }
   };
 
   return InitialState;
+
+})(State);
+
+
+},{"../scripts/dot":2,"../scripts/state":3,"../scripts/util":4,"./2":6}],6:[function(require,module,exports){
+var Dot, SecondState, State, loadBackground, p, r, ref, s,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+ref = require('../scripts/util'), loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+
+State = require('../scripts/state');
+
+Dot = require('../scripts/dot');
+
+module.exports = SecondState = (function(superClass) {
+  extend(SecondState, superClass);
+
+  function SecondState() {
+    SecondState.__super__.constructor.call(this, '2', p(230, 75));
+  }
+
+  SecondState.prototype.onMouseMove = function(event) {
+    if (this.dot.contains(event.point)) {
+      this._hovered = true;
+      return this.showText('Too slow!');
+    }
+  };
+
+  SecondState.prototype.sequence = function() {
+    return [
+      {
+        endCondition: (function(_this) {
+          return function() {
+            return _this._hovered;
+          };
+        })(this),
+        action: (function(_this) {
+          return function(event) {
+            return _this.dot.position.x = 230 + Math.sin(event.time) * 10;
+          };
+        })(this)
+      }, {
+        setup: (function(_this) {
+          return function() {
+            _this._path = new Path([p(230, 75), p(300, 25), p(400, 50), p(300, 300)]);
+            _this._path.smooth();
+            _this._offset = 0;
+            return _this._step = _this._path.length / 30;
+          };
+        })(this),
+        action: (function(_this) {
+          return function() {
+            _this._offset += _this._step;
+            return _this.dot.position = _this._path.getLocationAt(_this._offset).point;
+          };
+        })(this),
+        endCondition: (function(_this) {
+          return function() {
+            return _this._offset >= (_this._path.length - _this._step);
+          };
+        })(this)
+      }
+    ];
+  };
+
+  return SecondState;
 
 })(State);
 

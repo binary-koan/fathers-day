@@ -1,7 +1,14 @@
-{ p } = require('./util')
+{ loadBackground, p } = require('./util')
+Dot = require('./dot')
 
 module.exports =
 class State
+  constructor: (imageID, dotPosition) ->
+    @background = loadBackground(imageID + '.jpg')
+    @foreground = loadBackground(imageID + '-foreground.png')
+    @dot = new Dot(dotPosition)
+    @layer = new Layer([@background, @dot, @foreground])
+
   onMouseMove: ->
 
   onFrame: (event) ->
@@ -43,13 +50,13 @@ class State
       part.setup() if part.setup
       part.action(event)
 
-  showText: (dot, text) ->
+  showText: (text) ->
     @_textItem ?= @_setupText()
     @_textItem.opacity = 1.75
     @_textItem.content = text
     @_textItem.point = p(
-      dot.bounds.center.x - (@_textItem.bounds.width / 2)
-      dot.bounds.top - (@_textItem.bounds.height / 2)
+      @dot.bounds.center.x - (@_textItem.bounds.width / 2)
+      @dot.bounds.top - (@_textItem.bounds.height / 2)
     )
     @_showingText = true
 
