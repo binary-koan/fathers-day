@@ -75,11 +75,22 @@ module.exports = State = (function() {
     this.foreground = loadBackground('foreground' + imageID);
     this.dot = new Dot(dotPosition);
     this.layer = new Layer([this.background, this.dot, this.foreground]);
+    this.background.opacity = 0;
+    this.foreground.opacity = 0;
+    this._transitioning = true;
   }
 
   State.prototype.onMouseMove = function() {};
 
   State.prototype.onFrame = function(event) {
+    if (this._transitioning) {
+      if (this.background.opacity < 1) {
+        this.background.opacity += 0.05;
+        return;
+      } else {
+        this.foreground.opacity = 1;
+      }
+    }
     if (this._sequenceIndex == null) {
       this._sequence = this.sequence();
       this._sequenceFinished = this._sequence.length === 0;
