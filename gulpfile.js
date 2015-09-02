@@ -1,8 +1,13 @@
 var gulp = require('gulp');
 var gutil = require('gulp-util');
-var coffee = require('gulp-coffee');
 var wiredep = require('wiredep').stream;
 var sass = require('gulp-sass');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var uglify = require('gulp-uglify');
+var sourcemaps = require('gulp-sourcemaps');
+var coffeeify = require('coffeeify');
 
 // Transpile Sass
 gulp.task('sass', function () {
@@ -13,14 +18,27 @@ gulp.task('sass', function () {
 
 // Transpile Coffee
 gulp.task('coffee', function() {
-  gulp.src('./src/*.coffee')
-    .pipe(coffee({bare: true}).on('error', gutil.log))
-    .pipe(gulp.dest('./public/'))
+  return browserify({
+    entries: './src/main.coffee',
+    debug: true,
+    transform: [ coffeeify ],
+    extensions: [ '.coffee' ]
+  }).bundle()
+    .pipe(source('script.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    // .pipe(uglify())
+    .on('error', function(err) {
+      gutil.log(err);
+      this.end();
+    })
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./public/'));
 });
 
-// Watch .coffee files for change
+// Watch files for changes
 gulp.task('watch', ['coffee', 'sass'], function() {
-  gulp.watch('./src/*.coffee', ['coffee']);
+  gulp.watch('./src/**/*.coffee', ['coffee']);
   gulp.watch('./src/*.scss', ['sass']);
   gulp.watch('./src/index.html', ['bower']);
 });

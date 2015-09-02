@@ -1,27 +1,25 @@
-var Dot, InitialState, State, loadBackground, mouseTool, p, r, s, setState,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var InitialState, setState;
 
 paper.install(window);
 
 paper.setup('container');
 
-loadBackground = function(source) {
-  var image;
-  image = new Raster("images/" + source, view.center);
-  image.resizeToFill = function() {
-    var scale;
-    image.position = view.center;
-    scale = Math.max(view.size.width / image.width, view.size.height / image.height);
-    return image.size = new Size(image.width * scale, image.height * scale);
-  };
-  image.onLoad = function() {
-    return image.resizeToFill();
-  };
-  return image;
-};
+setState = require('./scripts/util').setState;
 
-Dot = (function(superClass) {
+InitialState = require('./states/1');
+
+setState(new InitialState());
+
+
+},{"./scripts/util":4,"./states/1":5}],2:[function(require,module,exports){
+var Dot, s,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+s = require('./util').s;
+
+module.exports = Dot = (function(superClass) {
   extend(Dot, superClass);
 
   function Dot(position) {
@@ -57,31 +55,13 @@ Dot = (function(superClass) {
 
 })(Group);
 
-p = function() {
-  return (function(func, args, ctor) {
-    ctor.prototype = func.prototype;
-    var child = new ctor, result = func.apply(child, args);
-    return Object(result) === result ? result : child;
-  })(Point, arguments, function(){});
-};
 
-r = function() {
-  return (function(func, args, ctor) {
-    ctor.prototype = func.prototype;
-    var child = new ctor, result = func.apply(child, args);
-    return Object(result) === result ? result : child;
-  })(Rectangle, arguments, function(){});
-};
+},{"./util":4}],3:[function(require,module,exports){
+var State, p;
 
-s = function() {
-  return (function(func, args, ctor) {
-    ctor.prototype = func.prototype;
-    var child = new ctor, result = func.apply(child, args);
-    return Object(result) === result ? result : child;
-  })(Size, arguments, function(){});
-};
+p = require('./util').p;
 
-State = (function() {
+module.exports = State = (function() {
   function State() {}
 
   State.prototype.onMouseMove = function() {};
@@ -176,7 +156,70 @@ State = (function() {
 
 })();
 
-InitialState = (function(superClass) {
+
+},{"./util":4}],4:[function(require,module,exports){
+var loadBackground, p, r, s, setState;
+
+window.mouseTool = new Tool();
+
+exports.setState = setState = function(state) {
+  view.onFrame = state.onFrame.bind(state);
+  mouseTool.onMouseMove = state.onMouseMove.bind(state);
+  return view.activeLayer = state.layer;
+};
+
+exports.loadBackground = loadBackground = function(source) {
+  var image;
+  image = new Raster("images/" + source, view.center);
+  image.resizeToFill = function() {
+    var scale;
+    image.position = view.center;
+    scale = Math.max(view.size.width / image.width, view.size.height / image.height);
+    return image.size = new Size(image.width * scale, image.height * scale);
+  };
+  image.onLoad = function() {
+    return image.resizeToFill();
+  };
+  return image;
+};
+
+exports.p = p = function() {
+  return (function(func, args, ctor) {
+    ctor.prototype = func.prototype;
+    var child = new ctor, result = func.apply(child, args);
+    return Object(result) === result ? result : child;
+  })(Point, arguments, function(){});
+};
+
+exports.r = r = function() {
+  return (function(func, args, ctor) {
+    ctor.prototype = func.prototype;
+    var child = new ctor, result = func.apply(child, args);
+    return Object(result) === result ? result : child;
+  })(Rectangle, arguments, function(){});
+};
+
+exports.s = s = function() {
+  return (function(func, args, ctor) {
+    ctor.prototype = func.prototype;
+    var child = new ctor, result = func.apply(child, args);
+    return Object(result) === result ? result : child;
+  })(Size, arguments, function(){});
+};
+
+
+},{}],5:[function(require,module,exports){
+var Dot, InitialState, State, loadBackground, p, r, ref, s,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+ref = require('../scripts/util'), loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+
+State = require('../scripts/state');
+
+Dot = require('../scripts/dot');
+
+module.exports = InitialState = (function(superClass) {
   extend(InitialState, superClass);
 
   function InitialState() {
@@ -275,12 +318,8 @@ InitialState = (function(superClass) {
 
 })(State);
 
-mouseTool = new Tool();
 
-setState = function(state) {
-  view.onFrame = state.onFrame.bind(state);
-  mouseTool.onMouseMove = state.onMouseMove.bind(state);
-  return view.activeLayer = state.layer;
-};
+},{"../scripts/dot":2,"../scripts/state":3,"../scripts/util":4}]},{},[1])
 
-setState(new InitialState());
+
+//# sourceMappingURL=script.js.map
