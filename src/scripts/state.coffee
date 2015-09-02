@@ -4,8 +4,8 @@ Dot = require('./dot')
 module.exports =
 class State
   constructor: (imageID, dotPosition) ->
-    @background = loadBackground(imageID + '.jpg')
-    @foreground = loadBackground(imageID + '-foreground.png')
+    @background = loadBackground('background' + imageID)
+    @foreground = loadBackground('foreground' + imageID)
     @dot = new Dot(dotPosition)
     @layer = new Layer([@background, @dot, @foreground])
 

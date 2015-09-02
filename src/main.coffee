@@ -1,7 +1,8 @@
 paper.install window
-paper.setup 'container'
 
 { setState } = require('./scripts/util')
 InitialState = require('./states/1')
 
-setState(new InitialState())
+window.onload = ->
+  paper.setup 'container'
+  setState(new InitialState())
