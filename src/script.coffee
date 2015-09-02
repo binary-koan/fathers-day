@@ -1,3 +1,6 @@
+paper.install window
+paper.setup 'container'
+
 loadBackground = (source) ->
   image = new Raster("images/#{source}", view.center)
   image.resizeToFill = ->
@@ -8,55 +11,81 @@ loadBackground = (source) ->
     image.resizeToFill()
   image
 
-class State
-  onFrame: (event) ->
-    if not this._sequenceIndex?
-      this._sequence = this.sequence()
-      this._sequenceFinished = (this._sequence.length == 0)
-      this._sequenceIndex = 0
+class Dot extends Group
+  constructor: (position) ->
+    @circle = new Path.Circle
+      position: s(0, 0)
+      radius: 45
+      fillColor: 'white'
+    @face = new Raster(source: 'images/faces-01.png', size: s(50, 50))
+    super(children: [@circle, @face], position: view.center)
 
-    this._continueSequence(event)
-    this._continueText() if this._showingText
+  setFace: (face) ->
+    switch face
+      when ''
+        @face.source = null
+      when ':|'
+        @face.source = 'images/faces-01.png'
+      when ':)'
+        @face.source = 'images/faces-02.png'
+      when ';)'
+        @face.source = 'images/faces-03.png'
+
+p = -> new Point(arguments...)
+r = -> new Rectangle(arguments...)
+s = -> new Size(arguments...)
+
+class State
+  onMouseMove: ->
+
+  onFrame: (event) ->
+    if not @_sequenceIndex?
+      @_sequence = @sequence()
+      @_sequenceFinished = (@_sequence.length == 0)
+      @_sequenceIndex = 0
+
+    @_continueSequence(event)
+    @_continueText() if @_showingText
 
   nextFrame: ->
 
   sequence: -> []
 
   _continueSequence: (event) ->
-    part = this._sequence[this._sequenceIndex]
-    if this._sequenceFinished
-      this.nextFrame()
-    else if this._sequenceWaitTime?
-      if this._sequenceWaitTime < part.waitTime
-        this._sequenceWaitTime += event.delta
+    part = @_sequence[@_sequenceIndex]
+    if @_sequenceFinished
+      @nextFrame(event)
+    else if @_sequenceWaitTime?
+      if @_sequenceWaitTime < part.waitTime
+        @_sequenceWaitTime += event.delta
       else
-        this._sequenceWaitTime = null
-        this._runNextInSequence event
+        @_sequenceWaitTime = null
+        @_runNextInSequence event
     else if part.endCondition
       if part.endCondition()
-        this._runNextInSequence event
+        @_runNextInSequence event
       else
-        part.action()
+        part.action(event)
 
   _runNextInSequence: (event) ->
-    this._sequenceIndex++
-    if this._sequenceIndex >= this._sequence.length
-      this._sequenceFinished = true
+    @_sequenceIndex++
+    if @_sequenceIndex >= @_sequence.length
+      @_sequenceFinished = true
     else
-      part = this._sequence[this._sequenceIndex]
-      this._sequenceWaitTime = 0 if part.waitTime
+      part = @_sequence[@_sequenceIndex]
+      @_sequenceWaitTime = 0 if part.waitTime
       part.setup() if part.setup
-      part.action()
+      part.action(event)
 
   showText: (dot, text) ->
-    this._textItem ?= this._setupText()
-    this._textItem.opacity = 1.5
-    this._textItem.content = text
-    this._textItem.point = new Point(
-      dot.bounds.center.x - (this._textItem.bounds.width / 2)
-      dot.bounds.top - (this._textItem.bounds.height / 2)
+    @_textItem ?= @_setupText()
+    @_textItem.opacity = 1.75
+    @_textItem.content = text
+    @_textItem.point = p(
+      dot.bounds.center.x - (@_textItem.bounds.width / 2)
+      dot.bounds.top - (@_textItem.bounds.height / 2)
     )
-    this._showingText = true
+    @_showingText = true
 
   _setupText: ->
     new PointText
@@ -68,69 +97,74 @@ class State
       shadowBlur: 2
 
   _continueText: ->
-    if this._textItem.opacity == 0
-      this._showingText = false
+    if @_textItem.opacity == 0
+      @_showingText = false
     else
-      this._textItem.point.y -= 0.5
-      this._textItem.opacity = Math.max(this._textItem.opacity - 0.015, 0)
+      @_textItem.point.y -= 0.3
+      @_textItem.opacity = Math.max(@_textItem.opacity - 0.015, 0)
 
 class InitialState extends State
   constructor: ->
     super
-    this.image = loadBackground('1.jpg')
-    this.dot = new Path.Circle
-      center: view.center
-      radius: 10
-      fillColor: 'white'
-      opacity: 0
-    this.dotSize = new Rectangle(view.center.x, view.center.y, 0, 0)
-    this.layer = new Layer([this.image, this.dot])
+    @background = loadBackground('1.jpg')
+    @foreground = loadBackground('1-foreground.png')
+    @dot = new Dot(view.center)
+    @dot.opacity = 0
+    @dot.scale(0.2)
+    @layer = new Layer([@background, @foreground, @dot])
+
+  onMouseMove: (event) ->
+    if @_sequenceFinished && @dot.contains(event.point)
+      alert('done!')
 
   sequence: -> [
     {
       action: =>
-        this.dot.scale 1.1
-        this.dot.opacity += 0.1
+        @dot.scale 1.1
+        @dot.opacity += 0.1
       endCondition: =>
-        this.dot.opacity >= 1
+        @dot.opacity >= 1
     }
     {
-      action: => this.showText(this.dot, 'Hi!')
+      action: => @showText(@dot, 'Hi!')
       waitTime: 2
     }
     {
-      action: => this.showText(this.dot, "I'm going on an adventure!")
+      setup: => @dot.setFace(':)')
+      action: => @showText(@dot, "I'm going on an adventure!")
       waitTime: 2
     }
     {
-      action: => this.showText(this.dot, 'See if you can follow me!')
+      setup: => @dot.setFace(';)')
+      action: => @showText(@dot, 'See if you can catch me!')
       waitTime: 2
     }
     {
       setup: =>
-        this._path = new Path([
-          new Point(500, 300), new Point(700, 100), new Point(800, 200)
+        @_path = new Path([
+          p(500, 300), p(700, 100), p(800, 200), p(750, 250)
         ])
-        this._offset = 0
-        this._step = this._path.length / 100
+        @_path.smooth()
+        @_offset = 0
+        @_step = @_path.length / 30
       action: =>
-        this._offset += this._step
-        this.dot.position = this._path.getLocationAt(this._offset).point
-        console.log(this._offset)
-        console.log(this.dot.position)
+        @_offset += @_step
+        @dot.position = @_path.getLocationAt(@_offset).point
+        # console.log('step: ' + @_step + '; ' + @_path.length / 2)
+        if Math.abs(@_offset - (@_path.length / 2)) < @_step / 2
+          @foreground.bringToFront()
       endCondition: =>
-        this._offset >= (this._path.length - this._step)
+        @_offset >= (@_path.length - @_step)
     }
   ]
 
+  nextFrame: (event) ->
+    @dot.position.x = 750 + Math.sin(event.time) * 10
+
+mouseTool = new Tool()
 setState = (state) ->
   view.onFrame = state.onFrame.bind(state)
+  mouseTool.onMouseMove = state.onMouseMove.bind(state)
   view.activeLayer = state.layer
 
-# Only run our code once the DOM is ready.
-window.onload = ->
-  # Set up paper.js
-  paper.install window
-  paper.setup 'container'
-
-  setState new InitialState()
+setState new InitialState()
