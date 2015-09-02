@@ -9,9 +9,20 @@ class State
     @dot = new Dot(dotPosition)
     @layer = new Layer([@background, @dot, @foreground])
 
+    @background.opacity = 0
+    @foreground.opacity = 0
+    @_transitioning = true
+
   onMouseMove: ->
 
   onFrame: (event) ->
+    if @_transitioning
+      if @background.opacity < 1
+        @background.opacity += 0.05
+        return
+      else
+        @foreground.opacity = 1
+
     if not @_sequenceIndex?
       @_sequence = @sequence()
       @_sequenceFinished = (@_sequence.length == 0)
