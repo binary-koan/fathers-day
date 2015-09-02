@@ -3,13 +3,14 @@ var InitialState, setState;
 
 paper.install(window);
 
-paper.setup('container');
-
 setState = require('./scripts/util').setState;
 
 InitialState = require('./states/1');
 
-setState(new InitialState());
+window.onload = function() {
+  paper.setup('container');
+  return setState(new InitialState());
+};
 
 
 },{"./scripts/util":4,"./states/1":5}],2:[function(require,module,exports){
@@ -70,8 +71,8 @@ Dot = require('./dot');
 
 module.exports = State = (function() {
   function State(imageID, dotPosition) {
-    this.background = loadBackground(imageID + '.jpg');
-    this.foreground = loadBackground(imageID + '-foreground.png');
+    this.background = loadBackground('background' + imageID);
+    this.foreground = loadBackground('foreground' + imageID);
     this.dot = new Dot(dotPosition);
     this.layer = new Layer([this.background, this.dot, this.foreground]);
   }
@@ -207,7 +208,7 @@ exports.setState = setState = function(state) {
 
 exports.loadBackground = loadBackground = function(source) {
   var image;
-  image = new Raster("images/" + source, view.center);
+  image = new Raster(source, view.center);
   image.resizeToFill = function() {
     var scale;
     image.position = view.center;
