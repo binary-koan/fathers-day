@@ -11,17 +11,25 @@ class State
 
     @background.opacity = 0
     @foreground.opacity = 0
-    @_transitioning = true
+    @dot.opacity = 0
+    @_transitionStep = 0
 
   onMouseMove: ->
 
   onFrame: (event) ->
-    if @_transitioning
+    if @_transitionStep == 0
       if @background.opacity < 1
         @background.opacity += 0.05
         return
       else
         @foreground.opacity = 1
+        @_transitionStep = 1
+    else if @_transitionStep == 1
+      if @dot.opacity < 1
+        @dot.opacity += 0.05
+        return
+      else
+        @_transitionStep = 2
 
     if not @_sequenceIndex?
       @_sequence = @sequence()

@@ -8,8 +8,8 @@ module.exports =
 class InitialState extends State
   constructor: ->
     super('1', view.center)
-    @dot.opacity = 0
-    @dot.scale(0.2)
+    # @dot.opacity = 0
+    # @dot.scale(0.2)
     @dot.bringToFront()
 
   onMouseMove: (event) ->
@@ -20,8 +20,8 @@ class InitialState extends State
   sequence: -> [
     {
       action: =>
-        @dot.scale 1.15
-        @dot.opacity += 0.1
+        # @dot.scale 1.15
+        # @dot.opacity += 0.1
       endCondition: =>
         @dot.opacity >= 1
     }

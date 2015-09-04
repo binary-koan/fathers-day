@@ -13,7 +13,7 @@ window.onload = function() {
 };
 
 
-},{"./scripts/util":4,"./states/1":5}],2:[function(require,module,exports){
+},{"./scripts/util":5,"./states/1":6}],2:[function(require,module,exports){
 var Dot, s,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -62,7 +62,68 @@ module.exports = Dot = (function(superClass) {
 })(Group);
 
 
-},{"./util":4}],3:[function(require,module,exports){
+},{"./util":5}],3:[function(require,module,exports){
+var MovingState, State, loadBackground, p, r, ref, s, setState,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+ref = require('../scripts/util'), setState = ref.setState, loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+
+State = require('../scripts/state');
+
+module.exports = MovingState = (function(superClass) {
+  extend(MovingState, superClass);
+
+  function MovingState(obj) {
+    MovingState.__super__.constructor.call(this, obj.imageId, obj.dotPosition);
+    this._hoveredText = obj.hoveredText;
+    this._nextState = obj.nextState;
+    obj.path.unshift(obj.dotPosition);
+    this._path = new Path(obj.path);
+  }
+
+  MovingState.prototype.onMouseMove = function(event) {
+    if (this.dot.contains(event.point)) {
+      this._hovered = true;
+      this.dot.setFace(':)');
+      return this.showText(this._hoveredText);
+    }
+  };
+
+  MovingState.prototype.sequence = function() {
+    return [
+      {
+        endCondition: (function(_this) {
+          return function() {
+            return _this._hovered;
+          };
+        })(this),
+        action: (function(_this) {
+          return function(event) {
+            if (!_this._initialX) {
+              _this._initialX = _this.dot.position.x - Math.sin(event.time) * 10;
+            }
+            return _this.dot.position.x = _this._initialX + Math.sin(event.time) * 10;
+          };
+        })(this)
+      }, {
+        path: this._path
+      }, {
+        action: (function(_this) {
+          return function() {
+            return setState(new _this._nextState());
+          };
+        })(this)
+      }
+    ];
+  };
+
+  return MovingState;
+
+})(State);
+
+
+},{"../scripts/state":4,"../scripts/util":5}],4:[function(require,module,exports){
 var Dot, State, loadBackground, p, ref;
 
 ref = require('./util'), loadBackground = ref.loadBackground, p = ref.p;
@@ -77,18 +138,27 @@ module.exports = State = (function() {
     this.layer = new Layer([this.background, this.dot, this.foreground]);
     this.background.opacity = 0;
     this.foreground.opacity = 0;
-    this._transitioning = true;
+    this.dot.opacity = 0;
+    this._transitionStep = 0;
   }
 
   State.prototype.onMouseMove = function() {};
 
   State.prototype.onFrame = function(event) {
-    if (this._transitioning) {
+    if (this._transitionStep === 0) {
       if (this.background.opacity < 1) {
         this.background.opacity += 0.05;
         return;
       } else {
         this.foreground.opacity = 1;
+        this._transitionStep = 1;
+      }
+    } else if (this._transitionStep === 1) {
+      if (this.dot.opacity < 1) {
+        this.dot.opacity += 0.05;
+        return;
+      } else {
+        this._transitionStep = 2;
       }
     }
     if (this._sequenceIndex == null) {
@@ -206,7 +276,7 @@ module.exports = State = (function() {
 })();
 
 
-},{"./dot":2,"./util":4}],4:[function(require,module,exports){
+},{"./dot":2,"./util":5}],5:[function(require,module,exports){
 var loadBackground, p, r, s, setState;
 
 window.mouseTool = new Tool();
@@ -257,7 +327,7 @@ exports.s = s = function() {
 };
 
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var Dot, InitialState, SecondState, State, loadBackground, p, r, ref, s, setState,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -275,8 +345,6 @@ module.exports = InitialState = (function(superClass) {
 
   function InitialState() {
     InitialState.__super__.constructor.call(this, '1', view.center);
-    this.dot.opacity = 0;
-    this.dot.scale(0.2);
     this.dot.bringToFront();
   }
 
@@ -291,10 +359,7 @@ module.exports = InitialState = (function(superClass) {
     return [
       {
         action: (function(_this) {
-          return function() {
-            _this.dot.scale(1.15);
-            return _this.dot.opacity += 0.1;
-          };
+          return function() {};
         })(this),
         endCondition: (function(_this) {
           return function() {
@@ -362,32 +427,178 @@ module.exports = InitialState = (function(superClass) {
 })(State);
 
 
-},{"../scripts/dot":2,"../scripts/state":3,"../scripts/util":4,"./2":6}],6:[function(require,module,exports){
-var Dot, SecondState, State, loadBackground, p, r, ref, s,
+},{"../scripts/dot":2,"../scripts/state":4,"../scripts/util":5,"./2":7}],7:[function(require,module,exports){
+var MovingState, SecondState, ThirdState, p,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-ref = require('../scripts/util'), loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+p = require('../scripts/util').p;
 
-State = require('../scripts/state');
+MovingState = require('../scripts/moving-state');
 
-Dot = require('../scripts/dot');
+ThirdState = require('./3');
 
 module.exports = SecondState = (function(superClass) {
   extend(SecondState, superClass);
 
   function SecondState() {
-    SecondState.__super__.constructor.call(this, '2', p(230, 75));
+    SecondState.__super__.constructor.call(this, {
+      imageId: '2',
+      dotPosition: p(230, 75),
+      hoveredText: 'Too slow!',
+      path: [p(300, 25), p(400, 50), p(300, 300)],
+      nextState: ThirdState
+    });
   }
 
-  SecondState.prototype.onMouseMove = function(event) {
+  return SecondState;
+
+})(MovingState);
+
+
+},{"../scripts/moving-state":3,"../scripts/util":5,"./3":8}],8:[function(require,module,exports){
+var FourthState, MovingState, ThirdState, p,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+p = require('../scripts/util').p;
+
+MovingState = require('../scripts/moving-state');
+
+FourthState = require('./4');
+
+module.exports = ThirdState = (function(superClass) {
+  extend(ThirdState, superClass);
+
+  function ThirdState() {
+    ThirdState.__super__.constructor.call(this, {
+      imageId: '3',
+      dotPosition: p(900, 250),
+      hoveredText: 'Hah!',
+      path: [p(500, 150), p(300, -50)],
+      nextState: FourthState
+    });
+  }
+
+  return ThirdState;
+
+})(MovingState);
+
+
+},{"../scripts/moving-state":3,"../scripts/util":5,"./4":9}],9:[function(require,module,exports){
+var FifthState, FourthState, MovingState, p,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+p = require('../scripts/util').p;
+
+MovingState = require('../scripts/moving-state');
+
+FifthState = require('./5');
+
+module.exports = FourthState = (function(superClass) {
+  extend(FourthState, superClass);
+
+  function FourthState() {
+    FourthState.__super__.constructor.call(this, {
+      imageId: '4',
+      dotPosition: p(200, 590),
+      hoveredText: "Aww ... guess I'm too fast!",
+      path: [p(500, 300), p(-50, 100)],
+      nextState: FifthState
+    });
+    this.dot.rotate(-30);
+  }
+
+  return FourthState;
+
+})(MovingState);
+
+
+},{"../scripts/moving-state":3,"../scripts/util":5,"./5":10}],10:[function(require,module,exports){
+var FifthState, MovingState, SixthState, p,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+p = require('../scripts/util').p;
+
+MovingState = require('../scripts/moving-state');
+
+SixthState = require('./6');
+
+module.exports = FifthState = (function(superClass) {
+  extend(FifthState, superClass);
+
+  function FifthState() {
+    FifthState.__super__.constructor.call(this, {
+      imageId: '5',
+      dotPosition: p(950, 240),
+      hoveredText: 'No! My camouflage!',
+      path: [p(500, 300), p(100, 250)],
+      nextState: SixthState
+    });
+  }
+
+  return FifthState;
+
+})(MovingState);
+
+
+},{"../scripts/moving-state":3,"../scripts/util":5,"./6":11}],11:[function(require,module,exports){
+var MovingState, SeventhState, SixthState, p,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+p = require('../scripts/util').p;
+
+MovingState = require('../scripts/moving-state');
+
+SeventhState = require('./7');
+
+module.exports = SixthState = (function(superClass) {
+  extend(SixthState, superClass);
+
+  function SixthState() {
+    SixthState.__super__.constructor.call(this, {
+      imageId: '6',
+      dotPosition: p(140, 250),
+      hoveredText: 'That was close!',
+      path: [p(500, 200), p(750, -50)],
+      nextState: SeventhState
+    });
+  }
+
+  return SixthState;
+
+})(MovingState);
+
+
+},{"../scripts/moving-state":3,"../scripts/util":5,"./7":12}],12:[function(require,module,exports){
+var Dot, SeventhState, State, loadBackground, p, r, ref, s, setState,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+ref = require('../scripts/util'), setState = ref.setState, loadBackground = ref.loadBackground, p = ref.p, r = ref.r, s = ref.s;
+
+State = require('../scripts/state');
+
+Dot = require('../scripts/dot');
+
+module.exports = SeventhState = (function(superClass) {
+  extend(SeventhState, superClass);
+
+  function SeventhState() {
+    SeventhState.__super__.constructor.call(this, '7', p(485, 240));
+  }
+
+  SeventhState.prototype.onMouseMove = function(event) {
     if (this.dot.contains(event.point)) {
       this._hovered = true;
       return this.showText('Too slow!');
     }
   };
 
-  SecondState.prototype.sequence = function() {
+  SeventhState.prototype.sequence = function() {
     return [
       {
         endCondition: (function(_this) {
@@ -397,7 +608,7 @@ module.exports = SecondState = (function(superClass) {
         })(this),
         action: (function(_this) {
           return function(event) {
-            return _this.dot.position.x = 230 + Math.sin(event.time) * 10;
+            return _this.dot.position.x = 500 + Math.sin(event.time) * 10;
           };
         })(this)
       }, {
@@ -406,12 +617,12 @@ module.exports = SecondState = (function(superClass) {
     ];
   };
 
-  return SecondState;
+  return SeventhState;
 
 })(State);
 
 
-},{"../scripts/dot":2,"../scripts/state":3,"../scripts/util":4}]},{},[1])
+},{"../scripts/dot":2,"../scripts/state":4,"../scripts/util":5}]},{},[1])
 
 
 //# sourceMappingURL=script.js.map
