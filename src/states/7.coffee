@@ -8,9 +8,8 @@ class SeventhState extends State
     super('7', p(485, 240))
 
   onMouseMove: (event) ->
-    if @dot.contains(event.point)
+    if @dot.contains(event.point) and not @_hovered
       @_hovered = true
-      @showText 'Too slow!'
 
   sequence: -> [
     {
@@ -19,6 +18,21 @@ class SeventhState extends State
         @dot.position.x = 500 + Math.sin(event.time) * 10
     }
     {
-      path: new Path([ p(230, 75), p(300, 25), p(400, 50), p(300, 300) ])
+      path: new Path([ p(485, 240), p(485, 200) ])
+    }
+    {
+      action: =>
+        @showText 'Aww ... you got me.'
+      waitTime: 3
+    }
+    {
+      action: =>
+        @dot.setFace ':)'
+        @showText 'Thanks for playing!'
+      waitTime: 3
+    }
+    {
+      action: =>
+        document.querySelector('.banner.end').classList.remove('hidden')
     }
   ]
