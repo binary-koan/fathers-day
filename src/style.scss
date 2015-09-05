@@ -2,17 +2,65 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  background: darken(white, 5%);
+  text-align: center;
 }
 
 .hidden {
   display: none;
 }
 
-canvas {
+.banner {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s linear 0.5s, opacity 0.5s linear;
+
   position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  margin-left: -250px;
+  width: 500px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-left: 1px solid darken(white, 20%);
+  border-right: 1px solid darken(white, 20%);
+
+  &.hidden {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  button {
+    display: inline-block;
+    width: 150px;
+    height: 150px;
+
+    background: white;
+    border: 3px solid darken(white, 25%);
+    border-radius: 100px;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      width: 160px;
+      height: 160px;
+      background: darken(white, 10%);
+    }
+  }
+}
+
+canvas {
+  position: relative;
   top: 50%;
   margin-top: -300px;
-  left: 50%;
-  margin-left: -500px;
+
+  border: 3px solid darken(white, 35%);
   border-radius: 5px;
 }

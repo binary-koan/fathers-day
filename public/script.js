@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var InitialState, setState;
+var InitialState, container, setState, startButton, startPanel;
 
 paper.install(window);
 
@@ -7,9 +7,21 @@ setState = require('./scripts/util').setState;
 
 InitialState = require('./states/1');
 
+container = document.querySelector('#container');
+
+startPanel = document.querySelector('.banner.start');
+
+startButton = document.querySelector('#start-button');
+
+startButton.addEventListener('click', function() {
+  setState(new InitialState());
+  startPanel.classList.add('hidden');
+  return container.classList.remove('hidden');
+});
+
 window.onload = function() {
-  paper.setup('container');
-  return setState(new InitialState());
+  startButton.classList.remove('hidden');
+  return paper.setup('container');
 };
 
 
@@ -507,7 +519,7 @@ module.exports = FourthState = (function(superClass) {
       path: [p(500, 300), p(-50, 100)],
       nextState: FifthState
     });
-    this.dot.rotate(-30);
+    this.dot.rotate(-15);
   }
 
   return FourthState;
