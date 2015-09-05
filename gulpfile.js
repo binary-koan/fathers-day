@@ -40,18 +40,14 @@ gulp.task('coffee', function() {
 gulp.task('watch', ['coffee', 'sass'], function() {
   gulp.watch('./src/**/*.coffee', ['coffee']);
   gulp.watch('./src/*.scss', ['sass']);
-  gulp.watch('./src/index.html', ['bower']);
+  gulp.watch('./src/index.html', ['html']);
 });
 
 // Include bower components into html
-gulp.task('bower', function () {
+gulp.task('html', function () {
   gulp.src('./src/index.html')
-    .pipe(wiredep({
-      optional: 'configuration',
-      goes: 'here'
-    }))
     .pipe(gulp.dest('./public'));
 });
 
 // The default task (called when you run `gulp` from cli)
-gulp.task('default', ['watch', 'bower', 'sass']);
+gulp.task('default', ['watch', 'html', 'sass']);

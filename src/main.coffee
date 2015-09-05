@@ -1,3 +1,4 @@
+paper = require('../bower_components/paper/dist/paper-full')
 paper.install window
 
 { setState } = require('./scripts/util')

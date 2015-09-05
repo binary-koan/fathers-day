@@ -11,7 +11,6 @@
     "gulp-uglify": "^1.4.0",
     "gulp-util": "latest",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "wiredep": "latest"
+    "vinyl-source-stream": "^1.1.0"
   }
 }
