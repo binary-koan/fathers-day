@@ -12,4 +12,4 @@ class FourthState extends MovingState
       hoveredText: "Aww ... guess I'm too fast!"
       path: [ p(500, 300), p(-50, 100) ]
       nextState: FifthState
-    @dot.rotate(-15)
+    @dot.rotate(-10)
