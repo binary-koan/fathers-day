@@ -6,12 +6,19 @@ html, body {
   text-align: center;
 }
 
+.images {
+  position: absolute;
+  height: 1px;
+  width: 1px;
+  left: -100px;
+}
+
 .hidden {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
 }
 
 .banner {
-  visibility: visible;
   opacity: 1;
   transition: visibility 0s linear 0.5s, opacity 0.5s linear;
 
@@ -28,11 +35,6 @@ html, body {
   background: white;
   border-left: 1px solid darken(white, 20%);
   border-right: 1px solid darken(white, 20%);
-
-  &.hidden {
-    visibility: hidden;
-    opacity: 0;
-  }
 
   button {
     display: inline-block;
