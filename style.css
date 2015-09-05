@@ -3,15 +3,27 @@ html, body {
   padding: 0;
   height: 100%;
   background: #f2f2f2;
-  text-align: center; }
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300; }
+
+h1 {
+  font-family: 'Pacifico', sans-serif;
+  font-weight: 400;
+  color: #CA402B;
+  margin: 0; }
 
 .hidden {
-  display: none; }
+  display: none !important; }
+
+.images {
+  position: absolute;
+  height: 1px;
+  width: 1px;
+  left: -100px;
+  overflow: hidden; }
 
 .banner {
-  visibility: visible;
-  opacity: 1;
-  transition: visibility 0s linear 0.5s, opacity 0.5s linear;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -19,14 +31,14 @@ html, body {
   margin-left: -250px;
   width: 500px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
   background: white;
   border-left: 1px solid #cccccc;
   border-right: 1px solid #cccccc; }
-  .banner.hidden {
-    visibility: hidden;
-    opacity: 0; }
   .banner button {
     display: inline-block;
     width: 150px;
@@ -36,12 +48,13 @@ html, body {
     border-radius: 100px;
     text-align: center;
     text-transform: uppercase;
+    font-family: 'Roboto';
+    font-weight: 300;
     font-size: 24px;
     cursor: pointer;
     transition: all 0.2s ease-in-out; }
     .banner button:hover {
-      width: 160px;
-      height: 160px;
+      transform: scale(1.1);
       background: #e6e6e6; }
 
 canvas {

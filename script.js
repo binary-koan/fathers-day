@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var InitialState, container, setState, startButton, startPanel;
+var InitialState, container, restartButton, setState, startButton, startPanel;
 
 paper.install(window);
 
@@ -13,10 +13,16 @@ startPanel = document.querySelector('.banner.start');
 
 startButton = document.querySelector('#start-button');
 
+restartButton = document.querySelector('#restart-button');
+
 startButton.addEventListener('click', function() {
   setState(new InitialState());
   startPanel.classList.add('hidden');
   return container.classList.remove('hidden');
+});
+
+restartButton.addEventListener('click', function() {
+  return location.reload();
 });
 
 window.onload = function() {
@@ -95,7 +101,7 @@ module.exports = MovingState = (function(superClass) {
   }
 
   MovingState.prototype.onMouseMove = function(event) {
-    if (this.dot.contains(event.point)) {
+    if (this.dot.contains(event.point) && !this._hovered) {
       this._hovered = true;
       this.dot.setFace(':)');
       return this.showText(this._hoveredText);
@@ -519,7 +525,7 @@ module.exports = FourthState = (function(superClass) {
       path: [p(500, 300), p(-50, 100)],
       nextState: FifthState
     });
-    this.dot.rotate(-15);
+    this.dot.rotate(-10);
   }
 
   return FourthState;
@@ -544,7 +550,7 @@ module.exports = FifthState = (function(superClass) {
   function FifthState() {
     FifthState.__super__.constructor.call(this, {
       imageId: '5',
-      dotPosition: p(950, 240),
+      dotPosition: p(930, 240),
       hoveredText: 'No! My camouflage!',
       path: [p(500, 300), p(100, 250)],
       nextState: SixthState
@@ -604,9 +610,8 @@ module.exports = SeventhState = (function(superClass) {
   }
 
   SeventhState.prototype.onMouseMove = function(event) {
-    if (this.dot.contains(event.point)) {
-      this._hovered = true;
-      return this.showText('Too slow!');
+    if (this.dot.contains(event.point) && !this._hovered) {
+      return this._hovered = true;
     }
   };
 
@@ -624,7 +629,28 @@ module.exports = SeventhState = (function(superClass) {
           };
         })(this)
       }, {
-        path: new Path([p(230, 75), p(300, 25), p(400, 50), p(300, 300)])
+        path: new Path([p(485, 240), p(485, 200)])
+      }, {
+        action: (function(_this) {
+          return function() {
+            return _this.showText('Aww ... you got me.');
+          };
+        })(this),
+        waitTime: 3
+      }, {
+        action: (function(_this) {
+          return function() {
+            _this.dot.setFace(':)');
+            return _this.showText('Thanks for playing!');
+          };
+        })(this),
+        waitTime: 3
+      }, {
+        action: (function(_this) {
+          return function() {
+            return document.querySelector('.banner.end').classList.remove('hidden');
+          };
+        })(this)
       }
     ];
   };
