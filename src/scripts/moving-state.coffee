@@ -11,7 +11,7 @@ class MovingState extends State
     @_path = new Path(obj.path)
 
   onMouseMove: (event) ->
-    if @dot.contains(event.point)
+    if @dot.contains(event.point) and not @_hovered
       @_hovered = true
       @dot.setFace ':)'
       @showText @_hoveredText
